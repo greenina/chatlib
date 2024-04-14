@@ -16,7 +16,16 @@ BaseModelType = TypeVar('BaseModelType', bound=BaseModel)
 def get_type_adapter(cls: Type[DataType]) -> TypeAdapter[DataType]:
     return TypeAdapter(cls)
 
-
+# Generates converter functions for: Pydantic models <-> JSON or YAML strings
+# < Usage example >
+# class User(Basemodel):
+#     name: str
+#     gender: str
+# json_str = '{"name": "Inhwa", "gender": "woman"}'
+# json_convertor = generate_pydantic_converter(User, 'json')
+# user_from_json = json_converter[0](json_str, None)
+# print(user_from_json.name, user_from_json.gender)
+# json_str_from_user = json_converter[1](user_from_json, None)
 def generate_pydantic_converter(cls: Type[BaseModelType],
                                 serialization_type: Literal['json'] | Literal['yaml'] = 'json',
                                 serialization_kwargs: dict | None = None) -> tuple[
@@ -29,7 +38,7 @@ def generate_pydantic_converter(cls: Type[BaseModelType],
         return (lambda input, params: cls(**yaml_str_to_dict_converter(input, params))), (
             lambda input, params: dict_to_yaml_str_converter(input.json(**serialization_kwargs) if serialization_kwargs is not None else input.json(), params))
 
-
+# Generates converter functions for: DataType <-> JSON/YAML strings
 def generate_type_converter(cls: Type[DataType], serialization_type: Literal['json'] | Literal['yaml'] = 'json') -> tuple[
     Callable[[str, Any], DataType], Callable[[DataType, Any], str]]:
 
